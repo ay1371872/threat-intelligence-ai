@@ -1,0 +1,18 @@
+# Dedicated Standalone LLM Container (Ollama Inference Engine)
+# Course: 23CSE528 - NoSQL Databases using MongoDB
+# Student: Ayush Yadav (USN: 24BTLCL003) | JAIN (Deemed-to-be University)
+
+FROM ollama/ollama:latest
+
+# Environment Configuration for Local and Container Access
+ENV OLLAMA_HOST=0.0.0.0
+ENV OLLAMA_KEEP_ALIVE=24h
+
+# Standard Ollama Port
+EXPOSE 11434
+
+# Container Healthcheck
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:11434/api/tags || exit 1
+
+ENTRYPOINT ["ollama", "serve"]

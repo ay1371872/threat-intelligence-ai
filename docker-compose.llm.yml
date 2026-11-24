@@ -1,0 +1,18 @@
+version: "3.8"
+
+# Dedicated Standalone LLM Docker Service
+# Course: 23CSE528 - NoSQL Databases using MongoDB
+# Student: Ayush Yadav (USN: 24BTLCL003) | JAIN (Deemed-to-be University)
+
+services:
+  llm:
+    image: ollama/ollama:latest
+    container_name: ollama-llm
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - "C:/Users/AYUSH YADAV/.ollama:/root/.ollama"
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_HOST=0.0.0.0

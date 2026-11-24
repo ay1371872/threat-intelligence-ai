@@ -268,8 +268,9 @@ def detect_user_intent(query: str) -> Dict[str, Any]:
 
     # 2. Project Attribution & Student Identity
     if any(k in q_lower for k in [
-        "who made you", "who created you", "who are you", "author", "student",
-        "creator", "usn", "jain university", "sujeet", "ayush"
+        "who made", "who built", "who developed", "who created", "who is the author",
+        "who is the creator", "who are you", "author", "student", "creator", "usn",
+        "jain university", "sujeet", "sujeet jagtap", "ayush", "ayush yadav", "what is this project"
     ]):
         return {"intent": INTENT_PROJECT_INFO, "entity": "author", "confidence": 0.95, "raw_query": q}
 
@@ -358,18 +359,19 @@ def detect_user_intent(query: str) -> Dict[str, Any]:
         return {"intent": INTENT_DEV_ENVIRONMENT, "entity": "env", "confidence": 0.90, "raw_query": q}
 
     # 9. Operating System & Build
-    if any(k in q_lower for k in ["operating system", "what os", "which os", "windows version", "os build", "windows build"]):
+    if any(k in q_lower for k in ["operating system", "what os", "which os", "windows version", "os build", "windows build", "my os", "what is my os", "os", "windows 11"]):
         return {"intent": INTENT_OPERATING_SYSTEM, "entity": "windows", "confidence": 0.95, "raw_query": q}
 
     # 10. Specific Hardware Metrics (Battery, CPU, RAM, Storage, Wi-Fi, GPU, Uptime)
     hardware_metric_map = [
-        (["battery", "charger", "charging", "plugged in", "power left", "power remaining", "ac power"], "battery"),
-        (["wifi", "wi-fi", "ssid", "ip address", "my ip", "network connection"], "wifi"),
-        (["cpu usage", "cpu load", "processor usage", "processor load", "clock speed", "cpu cores"], "cpu"),
-        (["how much ram", "ram usage", "memory usage", "free ram", "ram free", "free memory"], "ram"),
-        (["storage space", "free storage", "disk space", "hard drive", "c drive", "d drive", "free space", "space left", "space available"], "storage"),
-        (["gpu", "graphics", "video card", "rtx", "rtx 3050", "vram"], "gpu"),
-        (["uptime", "boot time", "how long running", "when was my laptop booted", "running time"], "uptime")
+        (["battery", "charger", "charging", "plugged in", "power left", "power remaining", "ac power", "battery percentage", "battery health"], "battery"),
+        (["wifi", "wi-fi", "ssid", "ip address", "my ip", "network connection", "ip", "ethernet"], "wifi"),
+        (["cpu", "processor", "i5", "i5-13450hx", "cpu usage", "cpu load", "processor usage", "processor load", "clock speed", "cpu cores", "cores", "threads"], "cpu"),
+        (["ram", "memory", "how much ram", "ram usage", "memory usage", "free ram", "ram free", "free memory", "installed ram", "ddr", "ddr5"], "ram"),
+        (["storage", "storage space", "free storage", "disk space", "hard drive", "c drive", "d drive", "free space", "space left", "space available", "disk", "ssd", "hdd"], "storage"),
+        (["gpu", "graphics", "video card", "rtx", "rtx 3050", "vram", "display card", "nvidia"], "gpu"),
+        (["uptime", "boot time", "how long running", "when was my laptop booted", "running time"], "uptime"),
+        (["display", "screen", "resolution", "refresh rate", "monitor", "display resolution"], "display")
     ]
     for terms, metric in hardware_metric_map:
         if any(re.search(r"\b" + re.escape(t) + r"\b", q_lower) for t in terms):

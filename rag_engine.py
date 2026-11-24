@@ -73,6 +73,25 @@ def check_ollama_status(base_url: Optional[str] = None) -> Dict[str, Any]:
     }
 
 
+def get_best_available_model(preferred: Optional[str] = None) -> str:
+    """Intelligently detects which Ollama model is actually installed and ready."""
+    try:
+        st = check_ollama_status()
+        installed = st.get("installed_models", [])
+        if preferred and preferred in installed:
+            return preferred
+        if OLLAMA_MODEL in installed:
+            return OLLAMA_MODEL
+        for m in installed:
+            if "llama" in m.lower():
+                return m
+        if installed:
+            return installed[0]
+    except Exception:
+        pass
+    return preferred or OLLAMA_MODEL or "llama3.2:3b"
+
+
 # --- Vector Embeddings (Exercise 17) ---
 def compute_embedding(text: str, dim: int = EMBEDDING_DIM) -> List[float]:
     """Generates a reproducible 384-dimensional dense normalized vector representation."""
@@ -296,8 +315,9 @@ def local_slm_generate(prompt: str, context_items: List[Dict[str, Any]], history
 
     # 4. Project Identity, Author & University Attribution
     if any(kw in p_lower for kw in [
-        "who made you", "who created you", "who are you", "what is this project",
-        "author", "student", "creator", "usn", "jain university", "sujeet", "sujeet jagtap", "ayush"
+        "who made", "who built", "who developed", "who created", "who is the author",
+        "who are you", "what is this project", "author", "student", "creator", "usn",
+        "jain university", "sujeet", "sujeet jagtap", "ayush", "ayush yadav"
     ]):
         return (
             "### 🎓 Academic Project Attribution & Information\n\n"
@@ -403,7 +423,10 @@ def generate_chat_response(
     sessions_col = db["sessions"]
 
     active_backend = (backend or LLM_BACKEND or "ollama").lower()
-    active_model = model_name or (OLLAMA_MODEL if active_backend == "ollama" else OPENAI_MODEL)
+    if active_backend == "ollama":
+        active_model = get_best_available_model(model_name)
+    else:
+        active_model = model_name or OPENAI_MODEL
 
     # 1. Retrieve Context via RAG
     context_items = retrieve_threat_context(prompt, platform=platform, status=status, top_k=TOP_K)
@@ -446,7 +469,7 @@ def generate_chat_response(
             used_model_tag = f"Local SLM (OpenAI Offline)"
             
     elif active_backend == "ollama":
-        target_model = active_model or OLLAMA_MODEL
+        target_model = get_best_available_model(active_model)
         logger.info("[LLM] Querying Ollama engine with model '%s' at %s", target_model, OLLAMA_BASE_URL)
         try:
             # Build structured context for the SLM

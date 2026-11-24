@@ -6,7 +6,8 @@ version: "3.8"
 # Synthesizes Exercise 13 (Docker Deployment) & Appendix A.6
 
 services:
-  # 1. MongoDB 7.0 Community Database Service (Exercises 2, 8, 13)
+
+  # 1. MongoDB Database
   mongo:
     image: mongo:7.0
     container_name: threat-mongo
@@ -14,7 +15,7 @@ services:
     ports:
       - "27017:27017"
     environment:
-      - MONGO_INITDB_DATABASE=threat_intel_db
+      MONGO_INITDB_DATABASE: threat_intel_db
     volumes:
       - threat_mongo_data:/data/db
     networks:
@@ -26,7 +27,7 @@ services:
       retries: 5
       start_period: 10s
 
-  # 2. FastAPI RAG Backend Service (Exercises 4, 5, 10, 14, 17 & Appendix A.3)
+  # 2. FastAPI Backend
   backend:
     build:
       context: .
@@ -36,14 +37,14 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - MONGO_URI=mongodb://mongo:27017
-      - MONGO_DB=threat_intel_db
-      - LLM_BACKEND=ollama
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=llama3.2:1b
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - HOST_DIAGNOSTIC_URL=http://host.docker.internal:8000
-      - HOST_DIAGNOSTIC_TOKEN=ayush-aimlb-host-sec-token-2026
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB: threat_intel_db
+      LLM_BACKEND: ollama
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: llama3.2:3b
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      HOST_DIAGNOSTIC_URL: http://host.docker.internal:8000
+      HOST_DIAGNOSTIC_TOKEN: ${HOST_DIAGNOSTIC_TOKEN}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -51,11 +52,15 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-      ollama:
-        condition: service_started
-    command: ["uvicorn", "threat_intel_api:app", "--host", "0.0.0.0", "--port", "8000"]
+    command:
+      - uvicorn
+      - threat_intel_api:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
 
-  # 3. Streamlit Interactive Web Application (Exercise 13 & Appendix A.5)
+  # 3. Streamlit Frontend
   frontend:
     build:
       context: .
@@ -65,34 +70,27 @@ services:
     ports:
       - "8501:8501"
     environment:
-      - BACKEND_URL=http://backend:8000
-      - HOST_DIAGNOSTIC_URL=http://host.docker.internal:8000
-      - HOST_DIAGNOSTIC_TOKEN=ayush-aimlb-host-sec-token-2026
+      BACKEND_URL: http://backend:8000
+      HOST_DIAGNOSTIC_URL: http://host.docker.internal:8000
+      HOST_DIAGNOSTIC_TOKEN: ${HOST_DIAGNOSTIC_TOKEN}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
       - threat-network
     depends_on:
       - backend
-    command: [
-      "streamlit", "run", "streamlit_app.py",
-      "--server.port", "8501",
-      "--server.address", "0.0.0.0",
-      "--server.enableCORS", "false",
-      "--server.enableXsrfProtection", "false"
-    ]
-
-  # 4. Ollama Self-Hosted SLM Engine (Appendix A.1)
-  ollama:
-    image: ollama/ollama:latest
-    container_name: threat-ollama
-    restart: always
-    ports:
-      - "11434:11434"
-    volumes:
-      - threat_ollama_data:/root/.ollama
-    networks:
-      - threat-network
+    command:
+      - streamlit
+      - run
+      - streamlit_app.py
+      - --server.port
+      - "8501"
+      - --server.address
+      - 0.0.0.0
+      - --server.enableCORS
+      - "false"
+      - --server.enableXsrfProtection
+      - "false"
 
 networks:
   threat-network:
@@ -100,6 +98,4 @@ networks:
 
 volumes:
   threat_mongo_data:
-    driver: local
-  threat_ollama_data:
     driver: local
