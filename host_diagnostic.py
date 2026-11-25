@@ -34,6 +34,7 @@ import shutil
 import socket
 import logging
 import subprocess
+import difflib
 from typing import Dict, Any, Optional, List, Tuple
 
 logger = logging.getLogger("host_diagnostic")
@@ -65,11 +66,13 @@ INTENT_GENERAL          = "GENERAL"
 ALLOWLISTED_SOFTWARE_CATALOG: Dict[str, Dict[str, Any]] = {
     "claude": {
         "display_name": "Claude Desktop",
-        "aliases": ["claude", "claude desktop", "anthropic claude"],
-        "executables": ["claude.exe", "claude"],
+        "aliases": ["claude", "claude desktop", "anthropic claude", "cluade", "claud"],
+        "executables": ["claude-desktop.exe", "claude.exe", "claude"],
         "cli_cmd_allowlisted": None,  # GUI application, no CLI version
         "registry_names": ["Claude", "Anthropic Claude"],
         "standard_paths": [
+            r"AppData\Local\Microsoft\WindowsApps\claude-desktop.exe",
+            r"AppData\Local\Packages\Claude_pzs8sxrjxfjjc",
             r"AppData\Local\Programs\Claude\Claude.exe",
             r"AppData\Local\Claude\Claude.exe",
             r"AppData\Roaming\Claude\Claude.exe",
@@ -78,6 +81,31 @@ ALLOWLISTED_SOFTWARE_CATALOG: Dict[str, Dict[str, Any]] = {
         ],
         "install_url": "https://claude.ai/download",
         "description": "Anthropic Claude Desktop application for Windows."
+    },
+    "chatgpt": {
+        "display_name": "ChatGPT Desktop",
+        "aliases": ["chatgpt", "chat gpt", "openai chatgpt", "chatgpt desktop"],
+        "executables": ["chatgpt-classic.exe", "chatgpt.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["ChatGPT", "OpenAI.ChatGPT-Desktop"],
+        "standard_paths": [
+            r"AppData\Local\Microsoft\WindowsApps\chatgpt-classic.exe",
+            r"AppData\Local\Microsoft\WindowsApps\chatgpt.exe"
+        ],
+        "install_url": "https://openai.com/chatgpt/download/",
+        "description": "OpenAI ChatGPT Desktop application for Windows."
+    },
+    "whatsapp": {
+        "display_name": "WhatsApp Desktop",
+        "aliases": ["whatsapp", "whatsapp desktop", "what's app"],
+        "executables": ["WhatsApp.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["WhatsApp", "5319275A.WhatsAppDesktop"],
+        "standard_paths": [
+            r"AppData\Local\WhatsApp\WhatsApp.exe"
+        ],
+        "install_url": "https://www.whatsapp.com/download",
+        "description": "Meta WhatsApp Desktop messaging client."
     },
     "ollama": {
         "display_name": "Ollama",
@@ -552,7 +580,9 @@ def detect_user_intent(query: str) -> Dict[str, Any]:
 
 
 def normalize_app_name(raw_name: str) -> str:
-    """Normalizes colloquial and alias application names to canonical catalog keys."""
+    """Normalizes colloquial and alias application names to canonical catalog keys,
+    with built-in fuzzy typo matching (e.g. 'cluade' -> 'claude').
+    """
     if not raw_name:
         return "unknown"
     n = raw_name.lower().strip()
@@ -574,6 +604,20 @@ def normalize_app_name(raw_name: str) -> str:
         for alias in sorted(info["aliases"], key=len, reverse=True):
             if re.search(r"\b" + re.escape(alias) + r"\b", n):
                 return key
+
+    # Pass 3: Fuzzy Typo Matching against Catalog keys and aliases
+    candidates = {}
+    for key, info in ALLOWLISTED_SOFTWARE_CATALOG.items():
+        candidates[key] = key
+        for alias in info.get("aliases", []):
+            candidates[alias] = key
+
+    matches = difflib.get_close_matches(n, candidates.keys(), n=1, cutoff=0.72)
+    if matches:
+        matched_target = matches[0]
+        canonical_key = candidates[matched_target]
+        logger.info(f"[SPELLCHECK] Fuzzy matched typo '{n}' -> '{matched_target}' ({canonical_key})")
+        return canonical_key
 
     return n
 
@@ -684,6 +728,73 @@ def query_start_menu_applications() -> Dict[str, str]:
     return apps
 
 
+def query_windows_appx_packages() -> Dict[str, Dict[str, str]]:
+    """Scans the Windows AppModel/MSIX package repository in the user registry
+    to discover modern packaged Windows apps (e.g. Claude Desktop, WhatsApp, ChatGPT, Spotify).
+    """
+    apps: Dict[str, Dict[str, str]] = {}
+    if not IS_WINDOWS:
+        return apps
+
+    try:
+        import winreg
+        key_path = r"Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages"
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path) as root_key:
+            num_subkeys = winreg.QueryInfoKey(root_key)[0]
+            for i in range(num_subkeys):
+                try:
+                    pkg_id = winreg.EnumKey(root_key, i)
+                    with winreg.OpenKey(root_key, pkg_id) as pkg_key:
+                        dname = None
+                        root_folder = None
+                        try:
+                            dname, _ = winreg.QueryValueEx(pkg_key, "DisplayName")
+                        except Exception:
+                            pass
+                        try:
+                            root_folder, _ = winreg.QueryValueEx(pkg_key, "PackageRootFolder")
+                        except Exception:
+                            pass
+                        
+                        clean_name = dname or pkg_id.split("_")[0]
+                        version = "Not Available"
+                        parts = pkg_id.split("_")
+                        if len(parts) >= 2 and re.match(r"^\d+\.", parts[1]):
+                            version = parts[1]
+                        
+                        if clean_name and not str(clean_name).startswith("ms-resource:") and not str(clean_name).startswith("@{") and not str(clean_name).startswith("{"):
+                            apps[clean_name] = {
+                                "display_name": clean_name,
+                                "package_id": pkg_id,
+                                "version": version,
+                                "install_location": root_folder or "C:\\Program Files\\WindowsApps",
+                                "source": "MSIX Package"
+                            }
+                except Exception:
+                    continue
+    except Exception:
+        pass
+
+    return apps
+
+
+def query_windows_apps_folder_executables() -> Dict[str, str]:
+    """Scans %LOCALAPPDATA%\\Microsoft\\WindowsApps for execution aliases (e.g. claude-desktop.exe)."""
+    aliases: Dict[str, str] = {}
+    if not IS_WINDOWS:
+        return aliases
+    user_profile = os.environ.get("USERPROFILE", "C:\\Users\\AYUSH YADAV")
+    winapps_dir = os.path.join(user_profile, "AppData", "Local", "Microsoft", "WindowsApps")
+    if os.path.isdir(winapps_dir):
+        try:
+            for item in os.listdir(winapps_dir):
+                if item.lower().endswith(".exe"):
+                    aliases[item.lower()] = os.path.join(winapps_dir, item)
+        except Exception:
+            pass
+    return aliases
+
+
 def score_software_match(query: str, target: str) -> int:
     """Computes a relevance score (0-100) between user query and detected software name."""
     q = query.lower().strip()
@@ -731,6 +842,8 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
 
     user_profile = os.environ.get("USERPROFILE", "C:\\Users\\AYUSH YADAV")
     reg_apps = query_windows_registry_applications()
+    appx_apps = query_windows_appx_packages()
+    winapps_aliases = query_windows_apps_folder_executables()
     start_apps = query_start_menu_applications()
 
     # --- Probe 1: Windows Registry Check (Catalog Target OR Smart Score Matching) ---
@@ -758,12 +871,35 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
             if not catalog_entry:
                 display_title = registry_match.get("display_name", display_title)
 
-    # --- Probe 2: Start Menu Applications Check ---
-    start_menu_match = None
-    best_start, best_start_score = None, 0
+    # --- Probe 2: Windows Modern AppX / MSIX Package Repository Check ---
+    appx_match = None
     search_terms = [app_key]
     if catalog_entry:
         search_terms.extend(catalog_entry.get("aliases", []))
+    for sterm in search_terms:
+        for pname, pdata in appx_apps.items():
+            s = score_software_match(sterm, pname)
+            if s >= 65 or sterm.lower() in pname.lower():
+                appx_match = pdata
+                break
+        if appx_match:
+            break
+    if appx_match and not catalog_entry and not registry_match:
+        display_title = appx_match.get("display_name", display_title)
+
+    # --- Probe 3: WindowsApps Execution Aliases Check ---
+    winapps_match = None
+    target_exes = [f"{app_key.lower()}.exe", f"{app_key.lower()}-desktop.exe"]
+    if catalog_entry:
+        target_exes.extend([e.lower() for e in catalog_entry.get("executables", [])])
+    for tex in target_exes:
+        if tex in winapps_aliases:
+            winapps_match = winapps_aliases[tex]
+            break
+
+    # --- Probe 4: Start Menu Applications Check ---
+    start_menu_match = None
+    best_start, best_start_score = None, 0
     for sterm in search_terms:
         for sname, spath in start_apps.items():
             s = score_software_match(sterm, sname)
@@ -771,10 +907,10 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
                 best_start, best_start_score = (sname, spath), s
     if best_start_score >= 65:
         start_menu_match = best_start
-        if not catalog_entry and not registry_match:
+        if not catalog_entry and not registry_match and not appx_match:
             display_title = start_menu_match[0]
 
-    # --- Probe 3: Executable & PATH Detection ---
+    # --- Probe 5: Executable & PATH Detection ---
     active_binary_path = None
     if catalog_entry:
         for exe in catalog_entry.get("executables", []):
@@ -790,7 +926,7 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
             or shutil.which(f"{app_key}.bat")
         )
 
-    # --- Probe 4: Standard Directory Inspection & WindowsApps ---
+    # --- Probe 6: Standard Directory Inspection ---
     standard_path_match = None
     if catalog_entry:
         for rel_path in catalog_entry.get("standard_paths", []):
@@ -813,7 +949,7 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
                 standard_path_match = cpath
                 break
 
-    # --- Probe 5: Version Execution (Allowlisted Only) ---
+    # --- Probe 7: Version Execution (Allowlisted Only) ---
     cli_version_str = None
     if catalog_entry and catalog_entry.get("cli_cmd_allowlisted"):
         success, ver_out = execute_allowlisted_command(catalog_entry["cli_cmd_allowlisted"])
@@ -821,21 +957,25 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
             cli_version_str = ver_out
 
     # --- Synthesize Verification Findings ---
-    is_installed = bool(registry_match or start_menu_match or active_binary_path or standard_path_match)
+    is_installed = bool(registry_match or appx_match or winapps_match or start_menu_match or active_binary_path or standard_path_match)
 
     if is_installed:
         # Resolve Version
         version = "Not Available"
         if cli_version_str:
             version = cli_version_str
+        elif appx_match and appx_match.get("version") and appx_match.get("version") != "Not Available":
+            version = appx_match["version"]
         elif registry_match and registry_match.get("version") and registry_match.get("version") != "Not Available":
             version = registry_match["version"]
-        elif start_menu_match:
+        elif start_menu_match or winapps_match:
             version = "Available (Desktop Application)"
 
         # Resolve Path
         resolved_path = (
             active_binary_path
+            or winapps_match
+            or (appx_match.get("install_location") if appx_match else None)
             or standard_path_match
             or (start_menu_match[1] if start_menu_match else None)
             or (registry_match.get("install_location") if registry_match else None)
@@ -844,6 +984,10 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
             resolved_path = standard_path_match or "Registered in Windows Application Hive"
 
         details = []
+        if appx_match:
+            details.append(f"Modern Windows Package: '{appx_match['display_name']}' ({appx_match.get('package_id', '')})")
+        if winapps_match:
+            details.append(f"Execution alias active in WindowsApps ({winapps_match})")
         if registry_match:
             details.append(f"Registered Windows Application: '{registry_match['display_name']}'")
         if start_menu_match:
@@ -865,8 +1009,9 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
         # Verified Not Installed
         reasons = [
             f"No registered Windows application matching '{display_title}' was found in registry uninstall keys",
+            f"No matching modern Windows Store (MSIX) package was found",
             f"No matching application shortcut was found in Windows Start Menu programs",
-            f"Executable was not found in the Windows PATH environment",
+            f"Executable was not found in the Windows PATH environment or WindowsApps",
             f"Not found in standard installation directories (%LOCALAPPDATA%\\Programs, Program Files)"
         ]
         install_advice = f"You can download and install {display_title} from the official source: {install_url}"
@@ -888,25 +1033,33 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
 def handle_list_installed_software() -> str:
     """Returns a clean, sorted, categorized overview of installed applications on the Windows laptop."""
     reg_apps = query_windows_registry_applications()
-    start_apps = query_start_menu_applications()
+    appx_apps = query_windows_appx_packages()
     
     # Filter out system component noise
-    filtered = []
-    noise_prefixes = ["microsoft visual c++", "windows driver", "intel(r)", "update for", "security update"]
+    filtered = {}
+    noise_prefixes = ["microsoft visual c++", "windows driver", "intel(r)", "update for", "security update", "@{", "ms-resource:"]
     for name, data in reg_apps.items():
         if any(name.lower().startswith(p) for p in noise_prefixes):
             continue
-        filtered.append((name, data.get("version", "Installed")))
+        filtered[name] = data.get("version", "Installed")
+
+    for name, data in appx_apps.items():
+        if any(name.lower().startswith(p) for p in noise_prefixes):
+            continue
+        if name.startswith("{") or "cw5n1h2txyewy" in name or "neutral" in name.lower() or "experiencehost" in name.lower() or "brokerplugin" in name.lower():
+            continue
+        if name not in filtered:
+            filtered[name] = data.get("version", "Installed")
     
     # Sort by name
-    sorted_apps = sorted(filtered, key=lambda x: x[0].lower())
-    lines = [f"• **{name}** (Version: `{ver}`)" for name, ver in sorted_apps[:35]]
+    sorted_apps = sorted(filtered.items(), key=lambda x: x[0].lower())
+    lines = [f"• **{name}** (Version: `{ver}`)" for name, ver in sorted_apps[:40]]
     
     return (
         f"📦 **Applications Installed on Host Machine ({socket.gethostname()}):**\n\n"
-        f"Detected **{len(filtered)}** verified desktop applications registered on Windows:\n\n"
+        f"Detected **{len(filtered)}** verified desktop and modern applications registered on Windows:\n\n"
         + "\n".join(lines) + "\n\n"
-        "💡 *You can ask specifically about any software (e.g. \"Is Chrome installed?\", \"Is Docker available?\") for complete installation path and version details.*"
+        "💡 *You can ask specifically about any software (e.g. \"Is Claude installed?\", \"Is Chrome installed?\", \"Is Docker available?\") for complete installation path and version details.*"
     )
 
 
