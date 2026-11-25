@@ -49,6 +49,7 @@ IS_WINDOWS = sys.platform == "win32"
 # --- Intent Classification Constants ---
 INTENT_SOFTWARE_INSTALL = "SOFTWARE_INSTALL"
 INTENT_SOFTWARE_VERSION = "SOFTWARE_VERSION"
+INTENT_SOFTWARE_LIST    = "SOFTWARE_LIST"
 INTENT_RUNNING_PROCESS  = "RUNNING_PROCESS"
 INTENT_DEV_ENVIRONMENT  = "DEV_ENVIRONMENT"
 INTENT_OPERATING_SYSTEM = "OPERATING_SYSTEM"
@@ -125,7 +126,7 @@ ALLOWLISTED_SOFTWARE_CATALOG: Dict[str, Dict[str, Any]] = {
         "aliases": ["git", "git scm", "git version control"],
         "executables": ["git.exe", "git"],
         "cli_cmd_allowlisted": "git --version",
-        "registry_names": ["Git", "GitHub Desktop"],
+        "registry_names": ["Git"],
         "standard_paths": [
             r"C:\Program Files\Git\cmd\git.exe",
             r"C:\Program Files (x86)\Git\cmd\git.exe",
@@ -227,6 +228,147 @@ ALLOWLISTED_SOFTWARE_CATALOG: Dict[str, Dict[str, Any]] = {
         ],
         "install_url": "https://slack.com/downloads/windows",
         "description": "Slack productivity and team messaging platform."
+    },
+    "brave": {
+        "display_name": "Brave Browser",
+        "aliases": ["brave", "brave browser", "brave-browser"],
+        "executables": ["brave.exe", "brave"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["Brave"],
+        "standard_paths": [
+            r"AppData\Local\BraveSoftware\Brave-Browser\Application\brave.exe",
+            r"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
+        ],
+        "install_url": "https://brave.com/download/",
+        "description": "Brave privacy-focused web browser."
+    },
+    "edge": {
+        "display_name": "Microsoft Edge",
+        "aliases": ["edge", "ms edge", "microsoft edge", "msedge"],
+        "executables": ["msedge.exe", "edge.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["Microsoft Edge"],
+        "standard_paths": [
+            r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+            r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"
+        ],
+        "install_url": "https://www.microsoft.com/edge",
+        "description": "Microsoft Edge Chromium-based web browser."
+    },
+    "anaconda": {
+        "display_name": "Anaconda Data Science Platform",
+        "aliases": ["anaconda", "anaconda3", "conda", "anaconda navigator"],
+        "executables": ["conda.exe", "anaconda.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["Anaconda3", "Anaconda"],
+        "standard_paths": [
+            r"Anaconda3\python.exe",
+            r"AppData\Local\anaconda3\python.exe",
+            r"C:\ProgramData\anaconda3\python.exe"
+        ],
+        "install_url": "https://www.anaconda.com/download",
+        "description": "Enterprise Python distribution and data science platform."
+    },
+    "mysql": {
+        "display_name": "MySQL Server & Tools",
+        "aliases": ["mysql", "mysql server", "mysql workbench", "mysqld"],
+        "executables": ["mysql.exe", "mysqld.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["MySQL Server", "MySQL Workbench", "MySQL"],
+        "standard_paths": [
+            r"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe",
+            r"C:\Program Files\MySQL\MySQL Workbench 8.0 CE\MySQLWorkbench.exe"
+        ],
+        "install_url": "https://dev.mysql.com/downloads/",
+        "description": "Open-source relational database management system."
+    },
+    "github": {
+        "display_name": "GitHub Desktop",
+        "aliases": ["github desktop", "github app", "github"],
+        "executables": ["GitHubDesktop.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["GitHub Desktop"],
+        "standard_paths": [
+            r"AppData\Local\GitHubDesktop\GitHubDesktop.exe"
+        ],
+        "install_url": "https://desktop.github.com/",
+        "description": "GUI client for GitHub version control workflows."
+    },
+    "excel": {
+        "display_name": "Microsoft Excel",
+        "aliases": ["excel", "ms excel", "microsoft excel"],
+        "executables": ["excel.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["Microsoft Excel", "Office", "Microsoft 365"],
+        "standard_paths": [
+            r"C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE",
+            r"C:\Program Files (x86)\Microsoft Office\root\Office16\EXCEL.EXE"
+        ],
+        "install_url": "https://www.microsoft.com/microsoft-365/excel",
+        "description": "Microsoft Excel spreadsheet application."
+    },
+    "word": {
+        "display_name": "Microsoft Word",
+        "aliases": ["word", "ms word", "microsoft word"],
+        "executables": ["winword.exe", "word.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["Microsoft Word", "Office", "Microsoft 365"],
+        "standard_paths": [
+            r"C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE",
+            r"C:\Program Files (x86)\Microsoft Office\root\Office16\WINWORD.EXE"
+        ],
+        "install_url": "https://www.microsoft.com/microsoft-365/word",
+        "description": "Microsoft Word word processing application."
+    },
+    "spotify": {
+        "display_name": "Spotify",
+        "aliases": ["spotify", "spotify music"],
+        "executables": ["spotify.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["Spotify"],
+        "standard_paths": [
+            r"AppData\Roaming\Spotify\Spotify.exe",
+            r"AppData\Local\Microsoft\WindowsApps\spotify.EXE"
+        ],
+        "install_url": "https://www.spotify.com/download/",
+        "description": "Digital music and podcast streaming service."
+    },
+    "discord": {
+        "display_name": "Discord",
+        "aliases": ["discord", "discord app"],
+        "executables": ["Discord.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["Discord"],
+        "standard_paths": [
+            r"AppData\Local\Discord\Update.exe"
+        ],
+        "install_url": "https://discord.com/download",
+        "description": "Voice, video, and text communication platform."
+    },
+    "vlc": {
+        "display_name": "VLC Media Player",
+        "aliases": ["vlc", "vlc media player", "vlc player"],
+        "executables": ["vlc.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["VLC media player", "VLC"],
+        "standard_paths": [
+            r"C:\Program Files\VideoLAN\VLC\vlc.exe",
+            r"C:\Program Files (x86)\VideoLAN\VLC\vlc.exe"
+        ],
+        "install_url": "https://www.videolan.org/vlc/",
+        "description": "Open-source cross-platform multimedia player."
+    },
+    "steam": {
+        "display_name": "Steam",
+        "aliases": ["steam", "steam client"],
+        "executables": ["steam.exe"],
+        "cli_cmd_allowlisted": None,
+        "registry_names": ["Steam"],
+        "standard_paths": [
+            r"C:\Program Files (x86)\Steam\steam.exe"
+        ],
+        "install_url": "https://store.steampowered.com/about/",
+        "description": "Valve Steam digital game distribution platform."
     }
 }
 
@@ -289,28 +431,48 @@ def detect_user_intent(query: str) -> Dict[str, Any]:
     if any(re.search(r"\b" + re.escape(t) + r"\b", q_lower) for t in cyber_terms):
         return {"intent": INTENT_SECURITY_THREAT, "entity": None, "confidence": 0.90, "raw_query": q}
 
-    # 5. Software Installation Queries (e.g. "Is Claude installed?", "Do I have Git?")
+    # 5. List Installed Applications Queries
+    clean_q = re.sub(r"[\?\.\!]+$", "", q_lower).strip()
+    list_patterns = [
+        r"\b(list|show|what|tell\s+me)\b.*?\b(installed\s+(apps|applications|software|programs)|applications\s+installed|software\s+installed)\b",
+        r"\bwhat\s+(apps|applications|software|programs)\s+(are\s+installed|do\s+i\s+have)\b",
+        r"\b(all\s+installed\s+(apps|software|applications|programs))\b",
+        r"\binstalled\s+(apps|applications|software|programs)\b"
+    ]
+    for lp in list_patterns:
+        if re.search(lp, clean_q):
+            return {"intent": INTENT_SOFTWARE_LIST, "entity": "all", "confidence": 0.95, "raw_query": q}
+
+    # 6. Software Installation Queries (Any Phrasing & Natural Language)
     install_patterns = [
-        r"\bis\s+([a-zA-Z0-9_\-\.\s]+?)\s+(installed|available|present|there|downloaded)\b",
-        r"\bdo\s+i\s+have\s+([a-zA-Z0-9_\-\.\s]+?)\s+(installed|available|present|downloaded|on\s+my\s+laptop)\b",
-        r"\bcheck\s+if\s+([a-zA-Z0-9_\-\.\s]+?)\s+is\s+(installed|available|present)\b",
-        r"\bhave\s+i\s+installed\s+([a-zA-Z0-9_\-\.\s]+)\b",
-        r"\bcan\s+you\s+find\s+([a-zA-Z0-9_\-\.\s]+?)\s+on\s+my\s+(laptop|pc|system|computer)\b",
-        r"\bis\s+there\s+([a-zA-Z0-9_\-\.\s]+?)\s+on\s+my\s+(laptop|pc|system|computer)\b"
+        r"^(?:is|check\s+if)\s+([a-zA-Z0-9_\-\.\s\+]+?)\s+(?:installed|available|present|downloaded|there)(?:\s+(?:in|on)\s+my\s+(?:laptop|pc|computer|system|windows|machine))?$",
+        r"^(?:is|check\s+if)\s+([a-zA-Z0-9_\-\.\s\+]+?)\s+(?:in|on)\s+my\s+(?:laptop|pc|computer|system|windows|machine)$",
+        r"^do\s+i\s+have\s+([a-zA-Z0-9_\-\.\s\+]+?)(?:\s+installed|\s+available|\s+downloaded)?(?:\s+(?:in|on)\s+my\s+(?:laptop|pc|computer|system|windows|machine))?$",
+        r"^does\s+my\s+(?:laptop|pc|computer|system|windows|machine)\s+have\s+([a-zA-Z0-9_\-\.\s\+]+?)(?:\s+installed|\s+available)?$",
+        r"^(?:tell\s+me\s+if|can\s+you\s+check\s+if|check\s+if)\s+([a-zA-Z0-9_\-\.\s\+]+?)\s+(?:is\s+)?(?:installed|available|present|on\s+my\s+laptop|in\s+my\s+laptop)$",
+        r"^(?:check|verify)\s+([a-zA-Z0-9_\-\.\s\+]+?)(?:\s+installation)?$",
+        r"^have\s+i\s+installed\s+([a-zA-Z0-9_\-\.\s\+]+?)(?:\s+(?:in|on)\s+my\s+(?:laptop|pc|computer|system|windows|machine))?$",
+        r"^([a-zA-Z0-9_\-\.\s\+]+?)\s+installed$",
+        r"\bis\s+([a-zA-Z0-9_\-\.\s\+]+?)\s+(?:installed|available|present|there|downloaded)\b",
+        r"\bcheck\s+if\s+([a-zA-Z0-9_\-\.\s\+]+?)\s+is\s+(?:installed|available|present)\b",
+        r"\bdo\s+i\s+have\s+([a-zA-Z0-9_\-\.\s\+]+?)\s+(?:installed|available|present|downloaded)\b",
+        r"\bcan\s+you\s+find\s+([a-zA-Z0-9_\-\.\s\+]+?)\s+on\s+my\s+(?:laptop|pc|system|computer)\b"
     ]
     for pat in install_patterns:
-        m = re.search(pat, q_lower)
+        m = re.search(pat, clean_q)
         if m:
             raw_entity = m.group(1).strip()
-            # Clean up trailing words like 'on my laptop', 'on my pc'
-            raw_entity = re.sub(r"\s+on\s+(my\s+)?(laptop|pc|computer|system|windows).*$", "", raw_entity).strip()
-            return {
-                "intent": INTENT_SOFTWARE_INSTALL,
-                "entity": normalize_app_name(raw_entity),
-                "raw_entity": raw_entity,
-                "confidence": 0.95,
-                "raw_query": q
-            }
+            raw_entity = re.sub(r"^(is|are|a|an|the|my)\s+", "", raw_entity).strip()
+            raw_entity = re.sub(r"\s+(?:in|on)\s+my\s+(?:laptop|pc|computer|system|windows|machine).*$", "", raw_entity).strip()
+            raw_entity = re.sub(r"\s+(is|are)$", "", raw_entity).strip()
+            if raw_entity and not any(w in raw_entity for w in ["laptop", "pc", "computer", "system", "specs", "specifications", "cpu", "ram", "battery", "gpu", "storage", "wifi", "uptime"]):
+                return {
+                    "intent": INTENT_SOFTWARE_INSTALL,
+                    "entity": normalize_app_name(raw_entity),
+                    "raw_entity": raw_entity,
+                    "confidence": 0.95,
+                    "raw_query": q
+                }
 
     # 6. Software Version Queries (e.g. "What version of Python is installed?", "Git version")
     version_patterns = [
@@ -394,12 +556,25 @@ def normalize_app_name(raw_name: str) -> str:
     if not raw_name:
         return "unknown"
     n = raw_name.lower().strip()
-    # Check catalog aliases
-    for key, info in ALLOWLISTED_SOFTWARE_CATALOG.items():
+    n = re.sub(r"^(is|are|a|an|the|my)\s+", "", n).strip()
+    n = re.sub(r"\s+(is|are|app|application|software|client|browser)$", "", n).strip()
+
+    # Pass 1: Exact key or exact alias match (check longer phrases first)
+    all_items = sorted(
+        ALLOWLISTED_SOFTWARE_CATALOG.items(),
+        key=lambda x: max([len(x[0])] + [len(a) for a in x[1].get("aliases", [])]),
+        reverse=True
+    )
+    for key, info in all_items:
         if n == key or n in info["aliases"]:
             return key
-        if any(alias in n for alias in info["aliases"]):
-            return key
+
+    # Pass 2: Whole-word boundary match
+    for key, info in all_items:
+        for alias in sorted(info["aliases"], key=len, reverse=True):
+            if re.search(r"\b" + re.escape(alias) + r"\b", n):
+                return key
+
     return n
 
 
@@ -491,6 +666,51 @@ def query_windows_registry_applications() -> Dict[str, Dict[str, str]]:
     return installed_apps
 
 
+def query_start_menu_applications() -> Dict[str, str]:
+    """Scans Windows Start Menu shortcut directories for registered user & system applications."""
+    apps: Dict[str, str] = {}
+    if not IS_WINDOWS:
+        return apps
+    user_start = os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Start Menu\Programs")
+    common_start = os.path.expandvars(r"%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs")
+    for base in [user_start, common_start]:
+        if os.path.exists(base):
+            for root, _, files in os.walk(base):
+                for f in files:
+                    if f.lower().endswith(".lnk"):
+                        name = f[:-4].strip()
+                        full_path = os.path.join(root, f)
+                        apps[name] = full_path
+    return apps
+
+
+def score_software_match(query: str, target: str) -> int:
+    """Computes a relevance score (0-100) between user query and detected software name."""
+    q = query.lower().strip()
+    t = target.lower().strip()
+    if q == t:
+        return 100
+    q_norm = re.sub(r"[^a-z0-9]", "", q)
+    t_norm = re.sub(r"[^a-z0-9]", "", t)
+    if q_norm and q_norm == t_norm:
+        return 95
+    noise = {"browser", "desktop", "client", "app", "application", "software", "edition", "ide", "editor", "community", "tool", "tools", "player", "ce"}
+    q_words = [w for w in re.split(r"[^a-z0-9]+", q) if len(w) > 1 and w not in noise]
+    t_words = [w for w in re.split(r"[^a-z0-9]+", t) if len(w) > 1 and w not in noise]
+    if not q_words or not t_words:
+        q_words = [w for w in re.split(r"[^a-z0-9]+", q) if len(w) > 1]
+        t_words = [w for w in re.split(r"[^a-z0-9]+", t) if len(w) > 1]
+    if not q_words or not t_words:
+        return 0
+    if all(w in t_words for w in q_words):
+        return 85 - abs(len(q_words) - len(t_words))
+    if q in t_words:
+        return 75
+    if all(any(tw.startswith(w) for tw in t_words) for w in q_words):
+        return 65
+    return 0
+
+
 def check_local_windows_software(app_key: str) -> Dict[str, Any]:
     """Performs deep, multi-vector verification on the Windows host machine
     to determine whether the requested application is truly installed.
@@ -507,28 +727,54 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
 
     catalog_entry = ALLOWLISTED_SOFTWARE_CATALOG.get(app_key)
     display_title = catalog_entry["display_name"] if catalog_entry else app_key.title()
-    install_url = (catalog_entry.get("install_url") if catalog_entry else None) or f"https://google.com/search?q={app_key}"
+    install_url = (catalog_entry.get("install_url") if catalog_entry else None) or f"https://google.com/search?q={app_key}+download"
 
     user_profile = os.environ.get("USERPROFILE", "C:\\Users\\AYUSH YADAV")
     reg_apps = query_windows_registry_applications()
+    start_apps = query_start_menu_applications()
 
-    # --- Probe 1: Windows Registry Check ---
+    # --- Probe 1: Windows Registry Check (Catalog Target OR Smart Score Matching) ---
     registry_match = None
-    if catalog_entry:
+    if catalog_entry and catalog_entry.get("registry_names"):
         reg_targets = catalog_entry.get("registry_names", [])
         for reg_name, reg_data in reg_apps.items():
             if any(t.lower() in reg_name.lower() for t in reg_targets):
                 registry_match = reg_data
                 break
-    else:
-        # Dynamic search for arbitrary application
-        for reg_name, reg_data in reg_apps.items():
-            if app_key.lower() in reg_name.lower():
-                registry_match = reg_data
-                display_title = reg_data.get("display_name", display_title)
-                break
 
-    # --- Probe 2: Executable & PATH Detection ---
+    if not registry_match:
+        # Score-based search across all registered Windows applications
+        best_reg, best_reg_score = None, 0
+        search_terms = [app_key]
+        if catalog_entry:
+            search_terms.extend(catalog_entry.get("aliases", []))
+        for sterm in search_terms:
+            for reg_name, reg_data in reg_apps.items():
+                s = score_software_match(sterm, reg_name)
+                if s > best_reg_score:
+                    best_reg, best_reg_score = reg_data, s
+        if best_reg_score >= 65:
+            registry_match = best_reg
+            if not catalog_entry:
+                display_title = registry_match.get("display_name", display_title)
+
+    # --- Probe 2: Start Menu Applications Check ---
+    start_menu_match = None
+    best_start, best_start_score = None, 0
+    search_terms = [app_key]
+    if catalog_entry:
+        search_terms.extend(catalog_entry.get("aliases", []))
+    for sterm in search_terms:
+        for sname, spath in start_apps.items():
+            s = score_software_match(sterm, sname)
+            if s > best_start_score:
+                best_start, best_start_score = (sname, spath), s
+    if best_start_score >= 65:
+        start_menu_match = best_start
+        if not catalog_entry and not registry_match:
+            display_title = start_menu_match[0]
+
+    # --- Probe 3: Executable & PATH Detection ---
     active_binary_path = None
     if catalog_entry:
         for exe in catalog_entry.get("executables", []):
@@ -536,10 +782,15 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
             if found_which:
                 active_binary_path = found_which
                 break
-    else:
-        active_binary_path = shutil.which(app_key) or shutil.which(f"{app_key}.exe")
+    if not active_binary_path:
+        active_binary_path = (
+            shutil.which(app_key)
+            or shutil.which(f"{app_key}.exe")
+            or shutil.which(f"{app_key}.cmd")
+            or shutil.which(f"{app_key}.bat")
+        )
 
-    # --- Probe 3: Standard Directory Inspection ---
+    # --- Probe 4: Standard Directory Inspection & WindowsApps ---
     standard_path_match = None
     if catalog_entry:
         for rel_path in catalog_entry.get("standard_paths", []):
@@ -547,12 +798,12 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
             if os.path.exists(full_path):
                 standard_path_match = full_path
                 break
-    else:
-        # Dynamic inspection of common Windows installation paths
+    if not standard_path_match:
         dynamic_candidates = [
             os.path.join(user_profile, "AppData", "Local", "Programs", app_key.title()),
             os.path.join(user_profile, "AppData", "Local", "Programs", f"{app_key.title()} IDE"),
             os.path.join(user_profile, "AppData", "Local", app_key.lower()),
+            os.path.join(user_profile, "AppData", "Local", "Microsoft", "WindowsApps", f"{app_key.lower()}.exe"),
             os.path.join(user_profile, ".gemini", app_key.lower()),
             os.path.join(r"C:\Program Files", app_key.title()),
             os.path.join(r"C:\Program Files (x86)", app_key.title()),
@@ -562,7 +813,7 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
                 standard_path_match = cpath
                 break
 
-    # --- Probe 4: Version Execution (Allowlisted Only) ---
+    # --- Probe 5: Version Execution (Allowlisted Only) ---
     cli_version_str = None
     if catalog_entry and catalog_entry.get("cli_cmd_allowlisted"):
         success, ver_out = execute_allowlisted_command(catalog_entry["cli_cmd_allowlisted"])
@@ -570,7 +821,7 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
             cli_version_str = ver_out
 
     # --- Synthesize Verification Findings ---
-    is_installed = bool(registry_match or active_binary_path or standard_path_match)
+    is_installed = bool(registry_match or start_menu_match or active_binary_path or standard_path_match)
 
     if is_installed:
         # Resolve Version
@@ -579,15 +830,24 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
             version = cli_version_str
         elif registry_match and registry_match.get("version") and registry_match.get("version") != "Not Available":
             version = registry_match["version"]
+        elif start_menu_match:
+            version = "Available (Desktop Application)"
 
         # Resolve Path
-        resolved_path = active_binary_path or standard_path_match or (registry_match.get("install_location") if registry_match else None)
+        resolved_path = (
+            active_binary_path
+            or standard_path_match
+            or (start_menu_match[1] if start_menu_match else None)
+            or (registry_match.get("install_location") if registry_match else None)
+        )
         if not resolved_path or resolved_path == "Not Available":
             resolved_path = standard_path_match or "Registered in Windows Application Hive"
 
         details = []
         if registry_match:
             details.append(f"Registered Windows Application: '{registry_match['display_name']}'")
+        if start_menu_match:
+            details.append(f"Verified Windows Start Menu Shortcut ('{start_menu_match[0]}')")
         if active_binary_path:
             details.append(f"Executable active in PATH ({active_binary_path})")
         if standard_path_match and standard_path_match != active_binary_path:
@@ -605,6 +865,7 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
         # Verified Not Installed
         reasons = [
             f"No registered Windows application matching '{display_title}' was found in registry uninstall keys",
+            f"No matching application shortcut was found in Windows Start Menu programs",
             f"Executable was not found in the Windows PATH environment",
             f"Not found in standard installation directories (%LOCALAPPDATA%\\Programs, Program Files)"
         ]
@@ -612,7 +873,7 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
 
         # Special contextual note for Ollama if running as daemon
         if app_key == "ollama":
-            install_advice += " (Note: The project's Ollama SLM API daemon is running locally on port 11434 serving llama3.2:1b, but native Windows desktop client is not installed)."
+            install_advice += " (Note: The project's Ollama SLM API daemon is running locally on port 11434 serving llama3.2:3b, but native Windows desktop client is not installed)."
 
         return {
             "application": display_title,
@@ -622,6 +883,31 @@ def check_local_windows_software(app_key: str) -> Dict[str, Any]:
             "install_path": "Not Available",
             "additional_info": f"{'. '.join(reasons)}. {install_advice}"
         }
+
+
+def handle_list_installed_software() -> str:
+    """Returns a clean, sorted, categorized overview of installed applications on the Windows laptop."""
+    reg_apps = query_windows_registry_applications()
+    start_apps = query_start_menu_applications()
+    
+    # Filter out system component noise
+    filtered = []
+    noise_prefixes = ["microsoft visual c++", "windows driver", "intel(r)", "update for", "security update"]
+    for name, data in reg_apps.items():
+        if any(name.lower().startswith(p) for p in noise_prefixes):
+            continue
+        filtered.append((name, data.get("version", "Installed")))
+    
+    # Sort by name
+    sorted_apps = sorted(filtered, key=lambda x: x[0].lower())
+    lines = [f"• **{name}** (Version: `{ver}`)" for name, ver in sorted_apps[:35]]
+    
+    return (
+        f"📦 **Applications Installed on Host Machine ({socket.gethostname()}):**\n\n"
+        f"Detected **{len(filtered)}** verified desktop applications registered on Windows:\n\n"
+        + "\n".join(lines) + "\n\n"
+        "💡 *You can ask specifically about any software (e.g. \"Is Chrome installed?\", \"Is Docker available?\") for complete installation path and version details.*"
+    )
 
 
 # ==============================================================================

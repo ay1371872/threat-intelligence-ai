@@ -19,8 +19,8 @@ import requests
 from db_connector import get_database
 from host_diagnostic import (
     detect_user_intent, check_host_software_installation, format_software_response,
-    handle_running_process_query, handle_dev_environment_query,
-    INTENT_SOFTWARE_INSTALL, INTENT_SOFTWARE_VERSION, INTENT_RUNNING_PROCESS,
+    handle_running_process_query, handle_dev_environment_query, handle_list_installed_software,
+    INTENT_SOFTWARE_INSTALL, INTENT_SOFTWARE_VERSION, INTENT_SOFTWARE_LIST, INTENT_RUNNING_PROCESS,
     INTENT_DEV_ENVIRONMENT, INTENT_OPERATING_SYSTEM, INTENT_HARDWARE_METRIC,
     INTENT_HARDWARE_SPECS, INTENT_SECURITY_THREAT, INTENT_PROJECT_INFO,
     INTENT_MONGODB_ROLE, INTENT_GREETING
@@ -267,6 +267,10 @@ def local_slm_generate(prompt: str, context_items: List[Dict[str, Any]], history
         diag = check_host_software_installation(entity or prompt)
         return format_software_response(diag)
 
+    # 2A-2. List All Installed Software on Host Machine
+    if intent == INTENT_SOFTWARE_LIST:
+        return handle_list_installed_software()
+
     # 2B. Running Processes & Services Check
     if intent == INTENT_RUNNING_PROCESS:
         return handle_running_process_query(entity)
@@ -438,7 +442,7 @@ def generate_chat_response(
     # 3. Model Inference Execution
     intent_data = detect_user_intent(prompt)
     immediate_intents = [
-        INTENT_SOFTWARE_INSTALL, INTENT_SOFTWARE_VERSION, INTENT_RUNNING_PROCESS,
+        INTENT_SOFTWARE_INSTALL, INTENT_SOFTWARE_VERSION, INTENT_SOFTWARE_LIST, INTENT_RUNNING_PROCESS,
         INTENT_DEV_ENVIRONMENT, INTENT_OPERATING_SYSTEM, INTENT_HARDWARE_METRIC,
         INTENT_HARDWARE_SPECS, INTENT_PROJECT_INFO, INTENT_MONGODB_ROLE, INTENT_GREETING
     ]
